@@ -1,0 +1,34 @@
+name: JSON to YAML Converter
+
+on:
+  push:
+    paths:
+      - 'data/*.json'
+
+jobs:
+  convert-json-to-yaml:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Convert JSON to YAML
+        run: |
+          pip install pyyaml
+          python -c '
+          import json, yaml, sys, os;
+          json_file = "data/sample.json"
+          yaml_file = "output/sample.yaml"
+          os.makedirs(os.path.dirname(yaml_file), exist_ok=True)
+          with open(json_file, "r") as jf, open(yaml_file, "w") as yf:
+              yaml.safe_dump(json.load(jf), yf, sort_keys=False)
+          '
+      
+      - name: Commit YAML file
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add output/sample.yaml
+          git commit -m "Automated conversion from JSON to YAML" || echo "No changes to commit"
+          git push
